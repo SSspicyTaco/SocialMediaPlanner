@@ -215,24 +215,6 @@
             border-radius: 5px;
         }
 
-        .script-preview {
-            margin-top: 20px;
-            text-align: left;
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-
-        .script-preview h2 {
-            margin-bottom: 10px;
-        }
-
-        .script-preview pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
         .dropdown {
             position: relative;
             display: inline-block;
@@ -260,6 +242,15 @@
 
         .dropdown:hover .dropdown-content {
             display: block;
+        }
+
+        .dropdown .dropbtn {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         @media (max-width: 600px) {
@@ -417,6 +408,7 @@
             savedScripts.push({ platform, scriptList });
             localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
             document.getElementById(`${platform}-script-list`).innerHTML = '';
+            localStorage.removeItem(`${platform}-temporary-script`);
             alert('Post saved successfully!');
         }
 
@@ -426,7 +418,7 @@
             savedScripts.forEach((script, index) => {
                 content += `<li>
                     <div class="dropdown">
-                        <button class="dropbtn"><strong>${script.platform}</strong></button>
+                        <button class="dropbtn">${capitalize(script.platform)} Script</button>
                         <div class="dropdown-content">
                             <a href="#" onclick="editScript(${index})">Edit</a>
                             <a href="#" onclick="deleteSavedScript(${index})">Delete</a>
