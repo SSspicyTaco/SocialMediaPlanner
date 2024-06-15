@@ -139,6 +139,24 @@
             margin: 5px 0;
             padding: 10px;
             border-radius: 5px;
+            position: relative;
+        }
+
+        .saved-scripts li button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .saved-scripts li button:hover {
+            background-color: #c82333;
         }
 
         .script-list {
@@ -155,6 +173,24 @@
             margin: 5px 0;
             padding: 10px;
             border-radius: 5px;
+            position: relative;
+        }
+
+        .script-list li button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 5px 10px;
+            border: none;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .script-list li button:hover {
+            background-color: #c82333;
         }
 
         .script-entry {
@@ -179,6 +215,24 @@
             border-radius: 5px;
         }
 
+        .script-preview {
+            margin-top: 20px;
+            text-align: left;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .script-preview h2 {
+            margin-bottom: 10px;
+        }
+
+        .script-preview pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
         @media (max-width: 600px) {
             nav {
                 flex-direction: column;
@@ -186,6 +240,20 @@
 
             nav button {
                 margin: 5px 0;
+            }
+
+            .script-entry {
+                flex-direction: column;
+            }
+
+            .script-entry textarea {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .script-entry select {
+                margin-right: 0;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -287,13 +355,19 @@
             if (content.trim() !== "") {
                 const scriptList = document.getElementById(`${platform}-script-list`);
                 const listItem = document.createElement('li');
-                listItem.innerHTML = `<strong>[${type}]</strong> ${content}`;
+                listItem.innerHTML = `<strong>[${type}]</strong> ${content} <button onclick="deleteScriptLine(this, '${platform}')">Delete</button>`;
                 scriptList.appendChild(listItem);
                 document.getElementById(`${platform}-script-content`).value = '';
                 saveTemporaryScript(platform);
             } else {
                 alert('Please enter script content.');
             }
+        }
+
+        function deleteScriptLine(button, platform) {
+            const listItem = button.parentElement;
+            listItem.remove();
+            saveTemporaryScript(platform);
         }
 
         function saveTemporaryScript(platform) {
@@ -319,12 +393,19 @@
         function showScripts() {
             const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
             let content = '<h1>Saved Scripts</h1><div class="saved-scripts"><ul>';
-            savedScripts.forEach(script => {
-                content += `<li><strong>${script.platform}:</strong> ${script.scriptList}</li>`;
+            savedScripts.forEach((script, index) => {
+                content += `<li><strong>${script.platform}:</strong> ${script.scriptList} <button onclick="deleteSavedScript(${index})">Delete</button></li>`;
             });
             content += '</ul></div>';
             document.getElementById('planner').innerHTML = content;
             localStorage.setItem('plannerData', content);
+        }
+
+        function deleteSavedScript(index) {
+            const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
+            savedScripts.splice(index, 1);
+            localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
+            showScripts();
         }
 
         function capitalize(str) {
