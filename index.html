@@ -95,7 +95,7 @@
 
         .script-section textarea {
             width: 100%;
-            height: 200px;
+            height: 100px;
             margin-bottom: 10px;
             padding: 10px;
             border: 1px solid #ccc;
@@ -105,6 +105,7 @@
         .script-options {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 10px;
         }
 
         .script-options select, .script-options button {
@@ -137,6 +138,44 @@
             background: #e9ecef;
             margin: 5px 0;
             padding: 10px;
+            border-radius: 5px;
+        }
+
+        .script-list {
+            margin-top: 20px;
+        }
+
+        .script-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .script-list li {
+            background: #e9ecef;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .script-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .script-entry textarea {
+            flex: 1;
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .script-entry select {
+            margin-right: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
             border-radius: 5px;
         }
 
@@ -217,100 +256,62 @@
         }
 
         function showPlatform(platform) {
-            let content = '';
-            switch (platform) {
-                case 'facebook':
-                    content = `
-                        <h1>Facebook Planner</h1>
-                        <div class="script-section">
-                            <textarea id="facebook-post" placeholder="Write your Facebook post here..."></textarea>
-                            <div class="script-options">
-                                <select id="facebook-script-type">
-                                    <option value="scene">Scene</option>
-                                    <option value="narrator">Narrator</option>
-                                    <option value="dialogue">Dialogue</option>
-                                </select>
-                                <button onclick="savePost('facebook')">Save Post</button>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'twitter':
-                    content = `
-                        <h1>Twitter Planner</h1>
-                        <div class="script-section">
-                            <textarea id="twitter-post" placeholder="Write your Twitter post here..."></textarea>
-                            <div class="script-options">
-                                <select id="twitter-script-type">
-                                    <option value="scene">Scene</option>
-                                    <option value="narrator">Narrator</option>
-                                    <option value="dialogue">Dialogue</option>
-                                </select>
-                                <button onclick="savePost('twitter')">Save Post</button>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'instagram':
-                    content = `
-                        <h1>Instagram Planner</h1>
-                        <div class="script-section">
-                            <textarea id="instagram-post" placeholder="Write your Instagram post here..."></textarea>
-                            <div class="script-options">
-                                <select id="instagram-script-type">
-                                    <option value="scene">Scene</option>
-                                    <option value="narrator">Narrator</option>
-                                    <option value="dialogue">Dialogue</option>
-                                </select>
-                                <button onclick="savePost('instagram')">Save Post</button>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'youtube':
-                    content = `
-                        <h1>YouTube Planner</h1>
-                        <div class="script-section">
-                            <textarea id="youtube-post" placeholder="Write your YouTube script here..."></textarea>
-                            <div class="script-options">
-                                <select id="youtube-script-type">
-                                    <option value="scene">Scene</option>
-                                    <option value="narrator">Narrator</option>
-                                    <option value="dialogue">Dialogue</option>
-                                </select>
-                                <button onclick="savePost('youtube')">Save Post</button>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                case 'tiktok':
-                    content = `
-                        <h1>TikTok Planner</h1>
-                        <div class="script-section">
-                            <textarea id="tiktok-post" placeholder="Write your TikTok script here..."></textarea>
-                            <div class="script-options">
-                                <select id="tiktok-script-type">
-                                    <option value="scene">Scene</option>
-                                    <option value="narrator">Narrator</option>
-                                    <option value="dialogue">Dialogue</option>
-                                </select>
-                                <button onclick="savePost('tiktok')">Save Post</button>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                default:
-                    content = '<h1>Select a platform</h1>';
-            }
+            let content = `
+                <h1>${capitalize(platform)} Planner</h1>
+                <div class="script-section">
+                    <div id="script-list" class="script-list">
+                        <ul id="${platform}-script-list"></ul>
+                    </div>
+                    <div class="script-entry">
+                        <textarea id="${platform}-script-content" placeholder="Add your script here..."></textarea>
+                        <select id="${platform}-script-type">
+                            <option value="scene">Scene</option>
+                            <option value="narrator">Narrator</option>
+                            <option value="dialogue">Dialogue</option>
+                            <option value="action">Action</option>
+                            <option value="music">Background Music</option>
+                        </select>
+                        <button onclick="addScriptLine('${platform}')">Add Line</button>
+                    </div>
+                    <button onclick="savePost('${platform}')">Save Post</button>
+                </div>
+            `;
             document.getElementById('planner').innerHTML = content;
+            loadSavedScript(platform);
             localStorage.setItem('plannerData', content);
         }
 
+        function addScriptLine(platform) {
+            const content = document.getElementById(`${platform}-script-content`).value;
+            const type = document.getElementById(`${platform}-script-type`).value;
+            if (content.trim() !== "") {
+                const scriptList = document.getElementById(`${platform}-script-list`);
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<strong>[${type}]</strong> ${content}`;
+                scriptList.appendChild(listItem);
+                document.getElementById(`${platform}-script-content`).value = '';
+                saveTemporaryScript(platform);
+            } else {
+                alert('Please enter script content.');
+            }
+        }
+
+        function saveTemporaryScript(platform) {
+            const scriptList = document.getElementById(`${platform}-script-list`).innerHTML;
+            localStorage.setItem(`${platform}-temporary-script`, scriptList);
+        }
+
+        function loadSavedScript(platform) {
+            const savedScript = localStorage.getItem(`${platform}-temporary-script`);
+            if (savedScript) {
+                document.getElementById(`${platform}-script-list`).innerHTML = savedScript;
+            }
+        }
+
         function savePost(platform) {
-            const postContent = document.getElementById(`${platform}-post`).value;
-            const scriptType = document.getElementById(`${platform}-script-type`).value;
+            const scriptList = document.getElementById(`${platform}-script-list`).innerHTML;
             const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
-            savedScripts.push({ platform, postContent, scriptType });
+            savedScripts.push({ platform, scriptList });
             localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
             alert('Post saved successfully!');
         }
@@ -319,11 +320,15 @@
             const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
             let content = '<h1>Saved Scripts</h1><div class="saved-scripts"><ul>';
             savedScripts.forEach(script => {
-                content += `<li><strong>${script.platform}:</strong> [${script.scriptType}] ${script.postContent}</li>`;
+                content += `<li><strong>${script.platform}:</strong> ${script.scriptList}</li>`;
             });
             content += '</ul></div>';
             document.getElementById('planner').innerHTML = content;
             localStorage.setItem('plannerData', content);
+        }
+
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
         }
     </script>
 </body>
