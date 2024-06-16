@@ -329,8 +329,8 @@
             const username = document.getElementById('reg-username').value;
             const password = document.getElementById('reg-password').value;
             if (username && password) {
-                localStorage.setItem('username', username);
-                localStorage.setItem('password', password);
+                localStorage.setItem(`user-${username}-username`, username);
+                localStorage.setItem(`user-${username}-password`, password);
                 alert('Registration successful! Please log in.');
                 showLoginForm();
             } else {
@@ -351,10 +351,11 @@
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const storedUsername = localStorage.getItem('username');
-            const storedPassword = localStorage.getItem('password');
+            const storedUsername = localStorage.getItem(`user-${username}-username`);
+            const storedPassword = localStorage.getItem(`user-${username}-password`);
             if (username === storedUsername && password === storedPassword) {
                 localStorage.setItem('isLoggedIn', true);
+                localStorage.setItem('currentUser', username);
                 showLoggedInView();
             } else {
                 alert('Incorrect username or password.');
@@ -363,6 +364,7 @@
 
         function logout() {
             localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('currentUser');
             document.getElementById('login-form').classList.remove('hidden');
             document.getElementById('logout').classList.add('hidden');
             document.getElementById('nav').classList.add('hidden');
@@ -370,18 +372,19 @@
         }
 
         function showLoggedInView() {
-            const username = localStorage.getItem('username');
+            const username = localStorage.getItem('currentUser');
             document.getElementById('welcome-message').innerText = `Welcome, ${username}`;
             document.getElementById('login-form').classList.add('hidden');
             document.getElementById('register-form').classList.add('hidden');
             document.getElementById('logout').classList.remove('hidden');
             document.getElementById('nav').classList.remove('hidden');
-            if (localStorage.getItem('plannerData')) {
-                document.getElementById('planner').innerHTML = localStorage.getItem('plannerData');
+            if (localStorage.getItem(`user-${username}-plannerData`)) {
+                document.getElementById('planner').innerHTML = localStorage.getItem(`user-${username}-plannerData`);
             }
         }
 
         function showPlatform(platform) {
+            const username = localStorage.getItem('currentUser');
             let content = `
                 <h1>${capitalize(platform)} Planner</h1>
                 <div class="script-section">
@@ -403,11 +406,12 @@
                 </div>
             `;
             document.getElementById('planner').innerHTML = content;
-            loadSavedScript(platform);
-            localStorage.setItem('plannerData', content);
+            loadSavedScript(platform, username);
+            localStorage.setItem(`user-${username}-plannerData`, content);
         }
 
         function addScriptLine(platform) {
+            const username = localStorage.getItem('currentUser');
             const content = document.getElementById(`${platform}-script-content`).value;
             const type = document.getElementById(`${platform}-script-type`).value;
             if (content.trim() !== "") {
@@ -416,7 +420,7 @@
                 listItem.innerHTML = `<strong>[${type}]</strong> ${content} <button onclick="deleteScriptLine(this, '${platform}')">Delete</button>`;
                 scriptList.appendChild(listItem);
                 document.getElementById(`${platform}-script-content`).value = '';
-                saveTemporaryScript(platform);
+                saveTemporaryScript(platform, username);
             } else {
                 alert('Please enter script content.');
             }
@@ -425,33 +429,36 @@
         function deleteScriptLine(button, platform) {
             const listItem = button.parentElement;
             listItem.remove();
-            saveTemporaryScript(platform);
+            const username = localStorage.getItem('currentUser');
+            saveTemporaryScript(platform, username);
         }
 
-        function saveTemporaryScript(platform) {
+        function saveTemporaryScript(platform, username) {
             const scriptList = document.getElementById(`${platform}-script-list`).innerHTML;
-            localStorage.setItem(`${platform}-temporary-script`, scriptList);
+            localStorage.setItem(`user-${username}-${platform}-temporary-script`, scriptList);
         }
 
-        function loadSavedScript(platform) {
-            const savedScript = localStorage.getItem(`${platform}-temporary-script`);
+        function loadSavedScript(platform, username) {
+            const savedScript = localStorage.getItem(`user-${username}-${platform}-temporary-script`);
             if (savedScript) {
                 document.getElementById(`${platform}-script-list`).innerHTML = savedScript;
             }
         }
 
         function savePost(platform) {
+            const username = localStorage.getItem('currentUser');
             const scriptList = document.getElementById(`${platform}-script-list`).innerHTML;
-            const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
+            const savedScripts = JSON.parse(localStorage.getItem(`user-${username}-savedScripts`)) || [];
             savedScripts.push({ platform, scriptList });
-            localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
+            localStorage.setItem(`user-${username}-savedScripts`, JSON.stringify(savedScripts));
             document.getElementById(`${platform}-script-list`).innerHTML = '';
-            localStorage.removeItem(`${platform}-temporary-script`);
+            localStorage.removeItem(`user-${username}-${platform}-temporary-script`);
             alert('Post saved successfully!');
         }
 
         function showScripts() {
-            const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
+            const username = localStorage.getItem('currentUser');
+            const savedScripts = JSON.parse(localStorage.getItem(`user-${username}-savedScripts`)) || [];
             let content = '<h1>Saved Scripts</h1><div class="saved-scripts"><ul>';
             savedScripts.forEach((script, index) => {
                 content += `<li>
@@ -467,20 +474,22 @@
             });
             content += '</ul></div>';
             document.getElementById('planner').innerHTML = content;
-            localStorage.setItem('plannerData', content);
+            localStorage.setItem(`user-${username}-plannerData`, content);
         }
 
         function deleteSavedScript(index) {
-            const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
+            const username = localStorage.getItem('currentUser');
+            const savedScripts = JSON.parse(localStorage.getItem(`user-${username}-savedScripts`)) || [];
             savedScripts.splice(index, 1);
-            localStorage.setItem('savedScripts', JSON.stringify(savedScripts));
+            localStorage.setItem(`user-${username}-savedScripts`, JSON.stringify(savedScripts));
             showScripts();
         }
 
         function editScript(index) {
-            const savedScripts = JSON.parse(localStorage.getItem('savedScripts')) || [];
+            const username = localStorage.getItem('currentUser');
+            const savedScripts = JSON.parse(localStorage.getItem(`user-${username}-savedScripts`)) || [];
             const script = savedScripts[index];
-            localStorage.setItem(`${script.platform}-temporary-script`, script.scriptList);
+            localStorage.setItem(`user-${username}-${script.platform}-temporary-script`, script.scriptList);
             showPlatform(script.platform);
             deleteSavedScript(index);
         }
